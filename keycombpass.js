@@ -1,9 +1,7 @@
 'use strict';
 
 function KeyCombPass(_type, _context) {
-	KeyCombPass.prototype.setTimeBetween = function(time) {
-		this.timeBetween = parseInt(time);
-	}
+	KeyCombPass.types = [ 'STRING', 'KEYCODE' ];
 
 	KeyCombPass.prototype.addPass = function(_pass, _func, _once, _preventDefault) {
 		this.PassCode.push({
@@ -20,6 +18,15 @@ function KeyCombPass(_type, _context) {
 		});
 	};
 
+	KeyCombPass.prototype.setTimeBetween = function(time){
+		var t = parseInt(time);
+		if(isNaN(t)) {
+			throw new Error('Time must be a number');
+		}
+		this.tempo = parseInt(t);
+		return true;
+	}
+
 	KeyCombPass.prototype.keyDown = function(evt) {
 		var character = String.fromCharCode(evt.which);
 		var shifton = false;
@@ -32,16 +39,17 @@ function KeyCombPass(_type, _context) {
 			that.temp = (that.temp === false 
 				&& typeof that.temp !== "string") 
 					? that.temp = character 
-					: that.temp+character;
+					: that.temp+character;			
 			that.testKeyPass();
-			that.setTimeout();
+			that.clearAfterTimeOut();
+				
 			if(that.pvtDef === true)
 				evt.preventDefault();
 		}
 		return;
 	};
 
-	KeyCombPass.prototype.setTimeout = function(){
+	KeyCombPass.prototype.clearAfterTimeOut = function(){
 		if(this.tempo !== false)
 			clearTimeout(this.tempo);
 
@@ -120,14 +128,12 @@ function KeyCombPass(_type, _context) {
 		if(document.cookie === "")
 		{
 			if(this.count === 0 && this.countLetter === 1)
-				console.warn("Security is not activated.");
+				console.info("Security is not activated.");
 			return -1;
 		}
 		return (stUid !== false && stUid === this.getUniqId())
 	}
 
-	if(typeof _type !== 'undefined' && typeof _type !== 'string')
-		throw new Error('The type must be a string.');
 	if(typeof _context !== 'undefined' && typeof _context !== 'object')
 		throw new Error('The context must be a context object.');
 
@@ -139,8 +145,6 @@ function KeyCombPass(_type, _context) {
 	d.setTime(d.getTime()+3600*1000*24);
 
 	document.cookie=this.cookieName+"="+escape(this.getUniqId())+"; expires="+escape(d.toUTCString())+"; path=/";
-
-	KeyCombPass.types = [ 'STRING', 'KEYCODE' ];
 
 	this.PassCode = [];
 	this.context = (_context) ? _context : window;
